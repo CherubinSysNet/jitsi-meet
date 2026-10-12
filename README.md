@@ -63,27 +63,9 @@ Dans le cadre de la mise en place d'une solution de communication interne, il a 
 | **Vidéo/Audio** | **10000** | **UDP** | **Critique** — flux RTP entre participants |
 | COLIBRI (interne) | 8082 → 8080 | TCP | Communication Jicofo ↔ JVB (localhost uniquement) |
 
-### Diagramme d’architecture (SVG)
+### Schéma logique
 
 ![Architecture de Jitsi Meet en réseau local](docs/architecture.svg)
-
-> Le diagramme présente les clients LAN, les ports d’accès, les conteneurs Docker et la séparation entre signalisation et flux audio/vidéo. Le fichier source SVG est disponible dans [`docs/architecture.svg`](docs/architecture.svg).
-
-### Schéma logique simplifié
-
-```
-[Navigateur machine 1] ──HTTPS:8443──► [web-1 (Nginx)]
-                                            │
-                                            ▼
-[Navigateur machine 2] ──HTTPS:8443──► [prosody-1] ◄──► [jicofo-1]
-                                            │                  │
-                                            ▼                  ▼
-                                       [jvb-1] ◄───────────────┘
-                                            │
-                                            ▼
-                              Flux audio/vidéo UDP:10000
-                                 (entre les navigateurs)
-```
 
 ---
 
@@ -176,7 +158,7 @@ Paramètres à appliquer :
 | `JVB_PORT` | `10000` | Port UDP du pont vidéo |
 | `JVB_ADVERTISE_IPS` | `192.168.88.137` | IP annoncée aux participants |
 | `JVB_COLIBRI_PORT` | `8082` | Évite le conflit sur le port 8080 |
-| `TZ` | `Africa/Kinshasa` | Fuseau horaire |
+| `TZ` | `Africa/Lubumbashi` | Fuseau horaire |
 
 ### Étape 6 — Création des dossiers de persistance
 
@@ -440,20 +422,6 @@ Le serveur de visioconférence **Jitsi Meet** a été déployé avec succès sur
 3. 🔧 Échec de jonction d'un second participant → résolu par redémarrage ordonné et validation des paramètres réseau
 
 La plateforme est **opérationnelle** et prête à l'emploi pour des réunions internes en réseau local.
-
----
-
-## 📄 Licence
-
-Ce projet est distribué sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus d'informations.
-
----
-
-## 🙏 Remerciements
-
-- [Jitsi Meet](https://jitsi.org/) — Solution de visioconférence open source
-- [Docker](https://www.docker.com/) — Plateforme de conteneurisation
-- [Ubuntu](https://ubuntu.com/) — Système d'exploitation
 
 ---
 
