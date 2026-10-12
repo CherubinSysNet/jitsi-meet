@@ -85,7 +85,7 @@ N'ouvrez que les ports nécessaires à votre architecture.
 
 ## Prérequis
 
--   Une machine Ubuntu 22.04 ou 24.04.
+-   Une machine Ubuntu 22.04, 24.04 ou 26.04.
 -   Au moins **4 Go de RAM** (8 Go recommandés) et 2 vCPU minimum pour
     ce laboratoire.
 -   Un compte disposant des droits `sudo`.
