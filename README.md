@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04%20%7C%26.04-E95420?logo=ubuntu&logoColor=white" alt="Ubuntu 22.04 | 24.04">
+  <img src="https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04%20%7C%2026.04-E95420?logo=ubuntu&logoColor=white" alt="Ubuntu 22.04 | 24.04">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker Compose">
   <img src="https://img.shields.io/badge/Jitsi-Meet-blue?logo=jitsi&logoColor=white" alt="Jitsi Meet">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License MIT">
