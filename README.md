@@ -443,6 +443,20 @@ La plateforme est **opérationnelle** et prête à l'emploi pour des réunions i
 
 ---
 
+## 📄 Licence
+
+Ce projet est distribué sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus d'informations.
+
+---
+
+## 🙏 Remerciements
+
+- [Jitsi Meet](https://jitsi.org/) — Solution de visioconférence open source
+- [Docker](https://www.docker.com/) — Plateforme de conteneurisation
+- [Ubuntu](https://ubuntu.com/) — Système d'exploitation
+
+---
+
 **Rapport rédigé le 11 octobre 2026.**
 
 ⭐ Si ce guide vous a aidé, n'hésitez pas à mettre une étoile sur le dépôt !

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Architecture Jitsi Meet en réseau local</title>
+  <desc id="desc">Deux navigateurs clients accèdent à Jitsi Meet via HTTPS sur le serveur Ubuntu. Docker Compose héberge Web, Prosody, Jicofo et Jitsi Videobridge. La signalisation passe par XMPP et l'audio/vidéo par UDP 10000.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#111827"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#25a8e0"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#000" flood-opacity="0.22"/></filter>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#60a5fa"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#34d399"/></marker>
+    <style>
+      text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#e5e7eb}.title{font-size:30px;font-weight:750;letter-spacing:.2px}.subtitle{font-size:15px;fill:#9ca3af}.section{font-size:14px;font-weight:700;letter-spacing:1.5px;fill:#93c5fd}.cardTitle{font-size:18px;font-weight:700}.small{font-size:13px;fill:#cbd5e1}.tiny{font-size:12px;fill:#9ca3af}.port{font-size:13px;font-weight:700;fill:#bfdbfe}.client{fill:#172554;stroke:#60a5fa;stroke-width:1.5}.service{fill:#172033;stroke:#334155;stroke-width:1.5}.green{fill:#052e2b;stroke:#34d399;stroke-width:1.5}.line{fill:none;stroke:#60a5fa;stroke-width:2.5;marker-end:url(#arrowBlue)}.media{fill:none;stroke:#34d399;stroke-width:3;stroke-dasharray:8 6;marker-end:url(#arrowGreen)}
+    </style>
+  </defs>
+  <rect width="1200" height="760" rx="24" fill="url(#bg)"/>
+  <circle cx="1080" cy="70" r="120" fill="#1d4ed8" opacity=".08"/><circle cx="70" cy="700" r="150" fill="#10b981" opacity=".06"/>
+  <text x="56" y="62" class="title">Jitsi Meet · Architecture LAN</text>
+  <text x="56" y="91" class="subtitle">Déploiement auto-hébergé sur Ubuntu · Docker Compose · accès local sans cloud tiers</text>
+  <rect x="56" y="122" width="1088" height="576" rx="20" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+  <text x="82" y="156" class="section">RÉSEAU LOCAL (LAN)</text>
+  <rect x="82" y="180" width="250" height="102" rx="14" class="client" filter="url(#shadow)"/>
+  <rect x="101" y="199" width="35" height="26" rx="4" fill="none" stroke="#93c5fd" stroke-width="2"/><path d="M107 231h23m-11-6v6" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <text x="151" y="210" class="cardTitle">Client 1</text><text x="151" y="234" class="small">Navigateur web</text><text x="101" y="262" class="port">HTTPS · TCP 8443</text>
+  <rect x="82" y="322" width="250" height="102" rx="14" class="client" filter="url(#shadow)"/>
+  <rect x="101" y="341" width="35" height="26" rx="4" fill="none" stroke="#93c5fd" stroke-width="2"/><path d="M107 373h23m-11-6v6" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <text x="151" y="352" class="cardTitle">Client 2</text><text x="151" y="376" class="small">Navigateur web</text><text x="101" y="404" class="port">HTTPS · TCP 8443</text>
+  <rect x="382" y="180" width="720" height="456" rx="18" fill="#111c2f" stroke="#3b82f6" stroke-width="1.7"/>
+  <rect x="382" y="180" width="720" height="56" rx="18" fill="url(#accent)"/><rect x="382" y="218" width="720" height="18" fill="url(#accent)"/>
+  <text x="410" y="214" font-size="18" font-weight="750" fill="#ffffff">SERVEUR UBUNTU · 192.168.88.137</text>
+  <text x="410" y="260" class="small">Conteneurs orchestrés par Docker Compose</text>
+  <rect x="420" y="285" width="292" height="100" rx="13" class="service" filter="url(#shadow)"/>
+  <rect x="438" y="303" width="38" height="38" rx="9" fill="#1d4ed8" opacity=".8"/><path d="M447 316h20m-20 7h20m-20 7h13" stroke="#dbeafe" stroke-width="2" stroke-linecap="round"/>
+  <text x="490" y="316" class="cardTitle">Web · Nginx</text><text x="490" y="339" class="small">Interface de visioconférence</text><text x="440" y="366" class="port">HTTPS 8443 / HTTP 8000</text>
+  <rect x="756" y="285" width="300" height="100" rx="13" class="service" filter="url(#shadow)"/>
+  <circle cx="784" cy="316" r="12" fill="#7c3aed"/><circle cx="784" cy="316" r="4" fill="#ede9fe"/><text x="810" y="316" class="cardTitle">Prosody</text><text x="810" y="339" class="small">Serveur XMPP · signalisation</text><text x="776" y="366" class="port">TCP 5222 · interne</text>
+  <rect x="420" y="430" width="292" height="100" rx="13" class="service" filter="url(#shadow)"/>
+  <circle cx="455" cy="461" r="15" fill="#0f766e"/><path d="M447 461h16m-8-8v16" stroke="#ccfbf1" stroke-width="2" stroke-linecap="round"/><text x="482" y="461" class="cardTitle">Jicofo</text><text x="440" y="488" class="small">Contrôleur de conférence</text><text x="440" y="511" class="tiny">Orchestre les conférences</text>
+  <rect x="756" y="430" width="300" height="100" rx="13" class="green" filter="url(#shadow)"/>
+  <path d="M778 454h28v22h-28z M784 448h28v22" fill="none" stroke="#6ee7b7" stroke-width="2"/><text x="821" y="461" class="cardTitle">Jitsi Videobridge (JVB)</text><text x="776" y="488" class="small">Relais des flux audio / vidéo</text><text x="776" y="511" class="port" style="fill:#a7f3d0">UDP 10000 · média</text>
+  <rect x="420" y="558" width="636" height="48" rx="11" fill="#0b1220" stroke="#334155"/><circle cx="443" cy="582" r="5" fill="#34d399"/><text x="459" y="587" class="small">Persistance des configurations et données via volumes Docker</text>
+  <path d="M332 231H370V335H420" class="line"/><path d="M332 373H360V335H420" class="line"/>
+  <path d="M712 335H756" class="line"/><path d="M906 385V407H566V430" class="line"/>
+  <path d="M712 480H756" class="line"/>
+  <path d="M332 250H365V610H735V530" class="media"/><path d="M332 393H350V620H1080V480H1056" class="media"/>
+  <rect x="82" y="454" width="250" height="90" rx="13" fill="#052e2b" stroke="#34d399" stroke-width="1.5"/>
+  <circle cx="108" cy="481" r="9" fill="#34d399"/><path d="M104 481l3 3 6-7" fill="none" stroke="#052e2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="128" y="481" class="cardTitle">Flux média direct</text><text x="101" y="506" class="small">Audio / vidéo des participants</text><text x="101" y="526" class="port" style="fill:#a7f3d0">UDP 10000 ↔ JVB</text>
+  <text x="82" y="584" class="tiny">Légende</text><path d="M82 605h42" class="line"/><text x="136" y="610" class="tiny">Web / signalisation</text><path d="M82 632h42" class="media"/><text x="136" y="637" class="tiny">Flux audio / vidéo</text>
+  <text x="56" y="730" class="tiny">MANDRIVA · Projet de déploiement et validation en réseau local</text>
+</svg>
