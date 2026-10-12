@@ -1,353 +1,448 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04%20%7C%2026.04-E95420?logo=ubuntu&logoColor=white" alt="Ubuntu 22.04 | 24.04">
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker Compose">
-  <img src="https://img.shields.io/badge/Jitsi-Meet-blue?logo=jitsi&logoColor=white" alt="Jitsi Meet">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/Status-Operational-success" alt="Status Operational">
-</p>
+# 🎥 Jitsi Meet — Serveur de Visioconférence en Réseau Local
 
-# Déploiement de Jitsi Meet en réseau local (LAN)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Jitsi](https://img.shields.io/badge/Jitsi-Meet-blue?logo=jitsi&logoColor=white)](https://jitsi.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Operational-success)]()
 
-> Mise en place d'une plateforme de visioconférence open source,
-> auto-hébergée et accessible depuis le réseau local, à l'aide de Docker
-> Compose.
+> Déploiement d'un serveur de visioconférence **Jitsi Meet** auto-hébergé, fonctionnant **entièrement en réseau local (LAN)**, sans aucune dépendance à Internet.
 
-## Présentation
+---
 
-Ce projet documente l'installation et la configuration de **Jitsi Meet**
-sur Ubuntu, afin de fournir un service de visioconférence interne sans
-dépendre d'une plateforme cloud tierce.
+## 📑 Table des Matières
 
-L'objectif est de permettre à plusieurs postes connectés au même réseau
-local de créer ou rejoindre une salle de réunion, avec audio, vidéo,
-chat et partage d'écran.
+- [Contexte et Objectifs](#-contexte-et-objectifs)
+- [Architecture de la Solution](#-architecture-de-la-solution)
+- [Prérequis](#-prérequis)
+- [Installation Pas à Pas](#-installation-pas-à-pas)
+- [Incidents Rencontrés et Résolutions](#-incidents-rencontrés-et-résolutions)
+- [Tests de Validation](#-tests-de-validation)
+- [Procédures d'Exploitation](#-procédures-dexploitation)
+- [Guide Utilisateur](#-guide-utilisateur)
+- [Recommandations Futures](#-recommandations-futures)
+- [Conclusion](#-conclusion)
+- [Licence](#-licence)
 
-## Objectifs du projet
+---
 
--   Déployer une solution de visioconférence auto-hébergée.
--   Rendre la plateforme accessible depuis le LAN.
--   Déployer les services avec Docker Compose.
--   Assurer la persistance de la configuration.
--   Diagnostiquer et résoudre des incidents de ports, de permissions et
-    de connectivité entre participants.
--   Documenter les tests et les procédures d'exploitation.
+## 🎯 Contexte et Objectifs
 
-## Environnement technique
+### Contexte
+Dans le cadre de la mise en place d'une solution de communication interne, il a été décidé de déployer un serveur de visioconférence **open source**, **auto-hébergé**, fonctionnant **entièrement en réseau local**, sans aucune dépendance à Internet ni à des services cloud tiers.
 
-  Élément                  Configuration
-  ------------------------ -------------------------------
-  Système d'exploitation   Ubuntu 22.04 / 22.04 / 26.04
-  Conteneurisation         Docker et Docker Compose
-  Solution                 Jitsi Meet
-  Adresse IP du serveur    `192.168.88.137`
-  URL d'accès              `https://192.168.88.137:8443`
-  Réseau cible             Réseau local (LAN)
-  Fuseau horaire           `Africa/Lubumbashi`
+### Objectifs
+- ✅ Disposer d'un serveur de visioconférence **local** accessible depuis le réseau LAN
+- ✅ Garantir la **confidentialité** des échanges (aucune donnée ne sort du réseau)
+- ✅ Permettre à **plusieurs machines** de rejoindre une même salle de réunion
+- ✅ Assurer la **persistance** de la configuration et la **facilité de maintenance**
 
-> **Important :** l'adresse IP et les paramètres présentés correspondent
-> à l'environnement de laboratoire utilisé. Adaptez-les à votre réseau
-> avant le déploiement.
+### Solution retenue
+**Jitsi Meet** déployé via **Docker Compose**, avec certificat auto-signé et désactivation de Let's Encrypt.
 
-## Architecture
+---
 
-La plateforme repose sur les principaux composants suivants :
+## 🏗 Architecture de la Solution
 
-  Composant                     Rôle
-  ----------------------------- ---------------------------------------------
-  **Web (Nginx)**               Interface web utilisée par les participants
-  **Prosody**                   Serveur XMPP pour la signalisation
-  **Jicofo**                    Gestion et orchestration des conférences
-  **Jitsi Videobridge (JVB)**   Acheminement des flux audio et vidéo
+### Composants déployés
 
-### Ports utilisés
+| Composant | Rôle | Conteneur Docker |
+|-----------|------|------------------|
+| **Prosody** | Serveur XMPP (signalisation) | `prosody-1` |
+| **Jicofo** | Contrôleur de conférence (orchestration) | `jicofo-1` |
+| **JVB** (Jitsi Videobridge) | Pont vidéo (flux audio/vidéo) | `jvb-1` |
+| **Web** | Interface web (Nginx) | `web-1` |
 
-  -----------------------------------------------------------------------
-  Port                    Protocole               Usage
-  ----------------------- ----------------------- -----------------------
-  `8000`                  TCP                     Accès HTTP
+### Flux réseau
 
-  `8443`                  TCP                     Accès HTTPS à
-                                                  l'interface
+| Type | Port | Protocole | Usage |
+|------|------|-----------|-------|
+| Web HTTP | 8000 | TCP | Accès initial / redirection |
+| Web HTTPS | 8443 | TCP | Accès à l'interface Jitsi |
+| Signalisation XMPP | 5222, 5269, 5280, 5347 | TCP | Interne uniquement |
+| **Vidéo/Audio** | **10000** | **UDP** | **Critique** — flux RTP entre participants |
+| COLIBRI (interne) | 8082 → 8080 | TCP | Communication Jicofo ↔ JVB (localhost uniquement) |
 
-  `10000`                 UDP                     Flux audio/vidéo via
-                                                  JVB
+### Diagramme d’architecture (SVG)
 
-  `8082`                  TCP, local              Port hôte utilisé pour
-                                                  COLIBRI/JVB
+![Architecture de Jitsi Meet en réseau local](docs/architecture.svg)
 
-  `5222`, `5269`, `5280`, TCP                     Communications XMPP et
-  `5347`                                          internes selon la
-                                                  configuration
-  -----------------------------------------------------------------------
+> Le diagramme présente les clients LAN, les ports d’accès, les conteneurs Docker et la séparation entre signalisation et flux audio/vidéo. Le fichier source SVG est disponible dans [`docs/architecture.svg`](docs/architecture.svg).
 
-Les ports internes ne doivent pas nécessairement être exposés au réseau.
-N'ouvrez que les ports nécessaires à votre architecture.
+### Schéma logique simplifié
 
-## Prérequis
-
--   Une machine Ubuntu 22.04, 24.04 ou 26.04.
--   Au moins **4 Go de RAM** (8 Go recommandés) et 2 vCPU minimum pour
-    ce laboratoire.
--   Un compte disposant des droits `sudo`.
--   Docker Engine et le plugin Docker Compose.
--   Une adresse IP stable et une connectivité entre les postes du LAN.
-
-## Installation
-
-Les commandes ci-dessous résument le déploiement. Consultez les fichiers
-de configuration officiels de Jitsi Docker Meet pour les détails propres
-à la version choisie.
-
-### 1. Installer Docker
-
-``` bash
-sudo apt update
-sudo apt install -y ca-certificates curl
+```
+[Navigateur machine 1] ──HTTPS:8443──► [web-1 (Nginx)]
+                                            │
+                                            ▼
+[Navigateur machine 2] ──HTTPS:8443──► [prosody-1] ◄──► [jicofo-1]
+                                            │                  │
+                                            ▼                  ▼
+                                       [jvb-1] ◄───────────────┘
+                                            │
+                                            ▼
+                              Flux audio/vidéo UDP:10000
+                                 (entre les navigateurs)
 ```
 
-Installez ensuite Docker Engine et le plugin Compose depuis le dépôt
-officiel Docker pour Ubuntu, puis vérifiez :
+---
 
-``` bash
+## 📋 Prérequis
+
+| Élément | Valeur / Détail |
+|---------|-----------------|
+| Système d'exploitation | Ubuntu 22.04 ou 24.04 |
+| RAM minimale | 4 Go (8 Go recommandé) |
+| CPU | 2 vCPU minimum |
+| Adresse IP locale | `192.168.88.137` (à adapter) |
+| Accès | Utilisateur avec `sudo` |
+| Réseau | LAN uniquement — Internet non requis |
+| Nom de domaine | Non requis (IP locale utilisée) |
+
+---
+
+## 🚀 Installation Pas à Pas
+
+### Étape 1 — Mise à jour du système
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+### Étape 2 — Installation de Docker et Docker Compose
+
+```bash
+sudo apt install -y ca-certificates curl unzip
+
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo usermod -aG docker $USER
+```
+
+> **⚠️ Action requise :** se déconnecter puis se reconnecter (ou exécuter `newgrp docker`).
+
+**Vérification :**
+```bash
 docker --version
 docker compose version
 ```
 
-Si vous ajoutez votre compte au groupe `docker`, déconnectez-vous puis
-reconnectez-vous. Le groupe `docker` accorde des privilèges élevés sur
-la machine.
+### Étape 3 — Téléchargement de Jitsi Meet
 
-### 2. Récupérer le projet Jitsi Meet Docker
+```bash
+wget $(wget -q -O - https://api.github.com/repos/jitsi/docker-jitsi-meet/releases/latest | grep zip | cut -d\" -f4)
+unzip docker-jitsi-meet-stable-*.zip
+cd docker-jitsi-meet-stable-*/
+```
 
-Téléchargez une version stable du dépôt officiel
-`jitsi/docker-jitsi-meet`, puis entrez dans le répertoire extrait.
+> **Note :** dans le cas présent, la version récupérée a été `stable-11248`.
 
-### 3. Préparer la configuration
+### Étape 4 — Création de la configuration
 
-``` bash
+```bash
 cp env.example .env
 ./gen-passwords.sh
 ```
 
-Adaptez ensuite les variables nécessaires dans `.env`, notamment :
-
-``` dotenv
-PUBLIC_URL=https://192.168.88.137:8443
-ENABLE_LETSENCRYPT=0
-HTTP_PORT=8000
-HTTPS_PORT=8443
-JVB_PORT=10000
-JVB_ADVERTISE_IPS=192.168.88.137
-JVB_COLIBRI_PORT=8082
-TZ=Africa/Kinshasa
+**Vérification :**
+```bash
+grep -E 'PASSWORD|SECRET' .env
 ```
 
-Générez des mots de passe uniques et conservez les secrets hors du dépôt
-Git. **Ne publiez jamais le fichier `.env` contenant des secrets.**
+### Étape 5 — Configuration pour le réseau local
 
-### 4. Créer les répertoires de configuration persistante
+```bash
+nano .env
+```
 
-``` bash
+Paramètres à appliquer :
+
+| Variable | Valeur | Rôle |
+|----------|--------|------|
+| `PUBLIC_URL` | `https://192.168.88.137:8443` | URL publique d'accès |
+| `ENABLE_LETSENCRYPT` | `0` | Désactive Let's Encrypt (pas d'Internet) |
+| `HTTP_PORT` | `8000` | Port HTTP |
+| `HTTPS_PORT` | `8443` | Port HTTPS |
+| `JVB_PORT` | `10000` | Port UDP du pont vidéo |
+| `JVB_ADVERTISE_IPS` | `192.168.88.137` | IP annoncée aux participants |
+| `JVB_COLIBRI_PORT` | `8082` | Évite le conflit sur le port 8080 |
+| `TZ` | `Africa/Kinshasa` | Fuseau horaire |
+
+### Étape 6 — Création des dossiers de persistance
+
+```bash
 mkdir -p ~/.jitsi-meet-cfg/{web,transcripts,prosody/config,prosody/prosody-plugins-custom,jicofo,jvb}
 ```
 
-Les permissions doivent correspondre aux utilisateurs utilisés par les
-conteneurs. Vérifiez les besoins de la version déployée avant
-d'appliquer un `chown` récursif.
+### Étape 7 — Attribution des permissions
 
-### 5. Configurer le pare-feu
+```bash
+sudo chown -R 1000:1000 ~/.jitsi-meet-cfg/
+```
 
-Exemple à adapter à votre politique réseau :
+> **💡 Justification :** le conteneur `web` s'exécute avec l'UID 1000. Le dossier hôte doit appartenir au même UID, sinon le conteneur ne peut pas écrire dans `/storage` et redémarre en boucle.
 
-``` bash
+### Étape 8 — Configuration du pare-feu
+
+```bash
 sudo ufw allow 22/tcp
 sudo ufw allow 8000/tcp
 sudo ufw allow 8443/tcp
 sudo ufw allow 10000/udp
-sudo ufw status
+sudo ufw enable
 ```
 
-N'activez UFW qu'après avoir vérifié les règles nécessaires à votre
-accès distant, notamment SSH.
+### Étape 9 — Lancement de la stack Jitsi
 
-### 6. Démarrer les services
-
-Dans le répertoire du projet :
-
-``` bash
+```bash
 docker compose up -d
+```
+
+**Vérification :**
+```bash
 docker compose ps
 ```
 
-## Accéder à la plateforme
+Résultat attendu :
 
-Depuis un poste connecté au même LAN, ouvrez :
+| Conteneur | État | Ports |
+|-----------|------|-------|
+| `web-1` | Up | `8000->8000/tcp`, `8443->8443/tcp` |
+| `prosody-1` | Up | ports internes |
+| `jicofo-1` | Up | `127.0.0.1:8888->8888/tcp` |
+| `jvb-1` | Up | `10000->10000/udp`, `127.0.0.1:8082->8080/tcp` |
 
-**https://192.168.88.137:8443**
+---
 
-Dans ce laboratoire, HTTPS utilise un certificat auto-signé. Le
-navigateur peut afficher un avertissement de sécurité. Pour un
-déploiement durable, configurez un certificat de confiance et un nom DNS
-adapté.
+## 🐛 Incidents Rencontrés et Résolutions
 
-Pour rejoindre une salle appelée `reunion-test`, utilisez :
+### Incident n°1 — Conflit sur le port 8080
 
-``` text
-https://192.168.88.137:8443/reunion-test
+**Symptôme :**
+```
+Error response from daemon: failed to bind host port 127.0.0.1:8080/tcp: address already in use
 ```
 
-Les participants doivent pouvoir joindre le serveur sur les ports
-requis, en particulier le port UDP `10000` pour les flux audio/vidéo.
+**Cause :** un autre service sur la machine hôte utilisait déjà le port 8080 (port COLIBRI de JVB).
 
-## Incidents rencontrés et résolutions
-
-### 1. Conflit sur le port 8080
-
-**Symptôme :** Docker ne peut pas réserver le port hôte `8080`, car il
-est déjà utilisé.
-
-**Résolution appliquée :**
-
-``` dotenv
+**Résolution :** ajout dans `.env` :
+```bash
 JVB_COLIBRI_PORT=8082
 ```
-
-Puis redémarrage des services :
-
-``` bash
-docker compose down
-docker compose up -d
+Puis redémarrage :
+```bash
+docker compose down && docker compose up -d
 ```
 
-### 2. Le conteneur Web redémarre en boucle
+---
 
-**Symptôme :** le conteneur ne peut pas écrire dans le répertoire
-`/storage`.
+### Incident n°2 — Conteneur `web` en boucle de redémarrage
 
-**Cause identifiée :** permissions incompatibles sur le volume de
-configuration.
+**Symptôme :**
+```
+FATAL ERROR: directory '/storage' is not writable by the container user (uid 1000).
+It maps to a host volume; make it writable by uid 1000.
+```
 
-**Résolution dans le laboratoire :**
+**Cause :** le dossier `~/.jitsi-meet-cfg/web` appartenait à l'utilisateur `cherubin` avec des permissions empêchant l'UID 1000 (utilisateur interne du conteneur) d'y écrire.
 
-``` bash
+**Résolution :**
+```bash
 sudo chown -R 1000:1000 ~/.jitsi-meet-cfg/
 docker compose down
 docker compose up -d
 ```
 
-> Vérifiez l'UID réellement utilisé par les conteneurs avant de
-> reproduire cette commande dans un autre environnement.
-
-### 3. Le deuxième participant ne peut pas rejoindre la conférence
-
-**Pistes de diagnostic :** - vérifier que Jicofo détecte le pont vidéo
-; - examiner les journaux de JVB, Jicofo et Prosody ; - confirmer la
-valeur annoncée par `JVB_ADVERTISE_IPS` ; - vérifier l'accessibilité du
-port UDP `10000` depuis le LAN.
-
-Commandes utiles :
-
-``` bash
-docker compose logs jvb --tail=100
-docker compose logs jicofo --tail=100
-docker compose logs prosody --tail=100
-curl -s http://localhost:8888/stats
+**Vérification après correction :**
+```bash
+docker compose ps                    # web-1 doit être "Up"
+curl -k -I https://localhost:8443    # doit renvoyer HTTP/1.1 200 OK
 ```
 
-Dans le laboratoire, un redémarrage ordonné de Prosody, Jicofo puis JVB,
-suivi de la validation réseau, a permis de résoudre le problème.
+---
 
-## Tests de validation
+### Incident n°3 — Échec lors de la jonction de la 2ᵉ machine
 
-  Test                                  Résultat observé
-  ------------------------------------- ------------------------
-  Docker et Docker Compose installés    Validé
-  Conteneurs démarrés                   Validé
-  Réponse HTTPS locale                  `HTTP 200 OK`
-  Accès depuis un poste du LAN          Validé
-  Port UDP `10000` exposé et autorisé   Validé
-  Réunion entre deux postes             Audio et vidéo validés
+**Symptôme observé :** message d'erreur affiché côté navigateur :
+> *« Malheureusement, un problème est survenu. On essaie d'arranger ça. Reconnexion dans 1 secondes… »*
 
-Ces résultats décrivent les tests réalisés dans l'environnement du
-projet ; ils ne garantissent pas le même résultat sans adaptation sur un
-autre réseau.
+**Analyse :**
+Ce message apparaît typiquement lorsqu'un **deuxième participant** tente de rejoindre la salle. La conférence échoue car :
+- soit **Jicofo ne détecte aucun pont vidéo disponible** (`bridge_count = 0`) ;
+- soit **JVB n'arrive pas à se connecter à Prosody** (problème d'authentification SCRAM) ;
+- soit le **port UDP 10000** n'est pas joignable entre les participants.
 
-## Exploitation et maintenance
+**Diagnostic à effectuer :**
+```bash
+# Vérifier que Jicofo voit bien JVB
+curl -s localhost:8888/stats | python3 -m json.tool | grep -i bridge
 
-### Démarrer
+# Consulter les logs JVB
+docker compose logs jvb --tail=50
 
-``` bash
+# Consulter les logs Jicofo
+docker compose logs jicofo --tail=50
+```
+
+**Résolution appliquée — redémarrage ordonné des services :**
+```bash
+docker compose restart prosody
+sleep 10
+docker compose restart jicofo
+sleep 10
+docker compose restart jvb
+```
+
+**Vérifications complémentaires :**
+- ✅ `JVB_ADVERTISE_IPS=192.168.88.137` — valeur confirmée correcte
+- ✅ Port `10000/udp` autorisé dans UFW — confirmé
+- ✅ Port `10000->10000/udp` exposé par le conteneur `jvb-1` — confirmé
+- ✅ Test `ping 192.168.88.137` depuis la 2ᵉ machine — validé
+
+**Statut :** ✅ Résolu après redémarrage ordonné et validation de la configuration réseau.
+
+---
+
+## ✅ Tests de Validation
+
+| N° | Test | Commande / Action | Résultat attendu | Statut |
+|----|------|-------------------|------------------|--------|
+| 1 | Docker opérationnel | `docker --version` | Version affichée | ✅ |
+| 2 | Conteneurs actifs | `docker compose ps` | Tous en `Up` | ✅ |
+| 3 | Page locale | `curl -k -I https://localhost:8443` | `HTTP/1.1 200 OK` | ✅ |
+| 4 | Accès depuis poste LAN | Navigateur → `https://192.168.88.137:8443` | Interface Jitsi | ✅ |
+| 5 | Port UDP exposé | `docker compose ps \| grep jvb` | `10000->10000/udp` | ✅ |
+| 6 | Pare-feu | `sudo ufw status` | `10000/udp` autorisé | ✅ |
+| 7 | Jonction 2ᵉ machine | Salle `test` rejointe depuis 2 postes | Vidéo + audio OK | ✅ |
+
+---
+
+## 🛠 Procédures d'Exploitation
+
+### Démarrer le service
+
+```bash
+cd ~/docker-jitsi-meet-stable-11248
 docker compose up -d
 ```
 
-### Arrêter
+### Arrêter le service
 
-``` bash
+```bash
 docker compose down
 ```
 
-### Redémarrer
+### Redémarrer proprement
 
-``` bash
+```bash
 docker compose restart
 ```
 
-### Consulter les journaux
+### Consulter les logs
 
-``` bash
-docker compose logs --tail=100
+```bash
+docker compose logs <service> --tail=100
+
+# Exemples :
 docker compose logs jvb --tail=100
-docker compose logs jicofo --tail=100
 docker compose logs web --tail=100
+docker compose logs jicofo --tail=100
 ```
 
-### Mettre à jour
+### Mise à jour de Jitsi
 
-``` bash
+```bash
 docker compose pull
+docker compose down
 docker compose up -d
 ```
 
-Avant une mise à jour, consultez les notes de version et sauvegardez la
-configuration.
+### Sauvegarde de la configuration
 
-### Sauvegarder la configuration
-
-Depuis le répertoire du projet, en adaptant les chemins à votre
-installation :
-
-``` bash
+```bash
 tar -czf jitsi-backup-$(date +%F).tar.gz ~/.jitsi-meet-cfg/ .env
 ```
 
-**Attention :** cette archive peut contenir des secrets. Stockez-la dans
-un emplacement protégé et ne la publiez pas sur GitHub.
+---
 
-## Améliorations envisagées
+## 👥 Guide Utilisateur
 
--   Configurer un DNS local, par exemple `meet.local`.
--   Déployer un certificat TLS de confiance pour les clients.
--   Mettre en place une authentification et contrôler la création des
-    salles.
--   Automatiser les sauvegardes et tester la restauration.
--   Documenter une procédure de reprise après incident.
--   Ajouter une supervision de la disponibilité des conteneurs et des
-    ports réseau.
+### Accès à la plateforme
 
-## Compétences mobilisées
+Depuis n'importe quelle machine du réseau local :
 
--   Administration Linux (Ubuntu).
--   Déploiement de services avec Docker Compose.
--   Réseaux TCP/IP, règles de pare-feu et diagnostic UDP.
--   Configuration de services de communication.
--   Analyse des journaux et résolution d'incidents.
--   Documentation technique et validation de service.
+```
+https://192.168.88.137:8443
+```
 
-## Auteur
+### Acceptation du certificat
 
-**Cherubin Tshienda** --- *MANDRIVA*\
-Administration systèmes et réseaux
+Au premier accès, un avertissement de sécurité s'affiche (certificat auto-signé). Il faut :
+1. Cliquer sur **« Avancé »**
+2. Cliquer sur **« Continuer vers 192.168.88.137 (dangereux) »**
 
-------------------------------------------------------------------------
+> 💡 Sur Chrome, si le bouton n'apparaît pas : taper `thisisunsafe` au clavier.
 
-*Projet de laboratoire réalisé et documenté le 11 octobre 2026.*
+### Créer ou rejoindre une salle
+
+- **Créer une salle :** cliquer sur « Démarrer une réunion », saisir un nom de salle.
+- **Rejoindre une salle :** accéder directement à l'URL :
+  ```
+  https://192.168.88.137:8443/nom-de-la-salle
+  ```
+
+### Fonctionnalités disponibles
+
+- 🎥 Vidéo et audio bidirectionnels
+- 💬 Chat textuel
+- 🖥 Partage d'écran
+- 🎨 Arrière-plans virtuels
+- ⏺ Enregistrement de réunion (si activé)
+
+---
+
+## 🔮 Recommandations Futures
+
+| Priorité | Recommandation | Bénéfice |
+|----------|----------------|----------|
+| 🟡 Moyenne | Mettre en place un **DNS local** (`meet.local`) | URL mémorisable au lieu de l'IP |
+| 🟡 Moyenne | Générer un **certificat auto-signé propre** avec `mkcert` | Évite l'avertissement navigateur |
+| 🟢 Basse | Mettre en place une **authentification** (JWT ou LDAP) | Contrôle d'accès |
+| 🟢 Basse | Activer l'**enregistrement** local des réunions | Archivage |
+| 🟢 Basse | Configurer un **script de sauvegarde automatique** (cron) | Résilience |
+| 🟢 Basse | Documenter le **plan de reprise** (restauration Docker + config) | Continuité de service |
+
+---
+
+## 🏁 Conclusion
+
+Le serveur de visioconférence **Jitsi Meet** a été déployé avec succès sur une infrastructure locale basée sur **Docker Compose**. La solution :
+
+- ✅ fonctionne **entièrement en réseau local**, sans aucune dépendance à Internet ;
+- ✅ garantit la **confidentialité** des échanges ;
+- ✅ permet à **plusieurs participants** de rejoindre une même salle depuis différentes machines du LAN ;
+- ✅ repose sur une **configuration persistante** et facilement sauvegardable.
+
+**Trois incidents** ont été rencontrés et résolus :
+
+1. 🔧 Conflit de port **8080** → résolu par `JVB_COLIBRI_PORT=8082`
+2. 🔧 Permissions du dossier de configuration → résolu par `chown -R 1000:1000`
+3. 🔧 Échec de jonction d'un second participant → résolu par redémarrage ordonné et validation des paramètres réseau
+
+La plateforme est **opérationnelle** et prête à l'emploi pour des réunions internes en réseau local.
+
+---
+
+**Rapport rédigé le 11 octobre 2026.**
+
+⭐ Si ce guide vous a aidé, n'hésitez pas à mettre une étoile sur le dépôt !
